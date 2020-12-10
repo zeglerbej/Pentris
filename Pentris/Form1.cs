@@ -28,6 +28,7 @@ namespace Pentris
         private int lastMoveFrame;
         private Direction moveDirection;
         private int dropRate;
+        private bool isGameOn;
 
         #region Initialization
         public Form1()
@@ -54,6 +55,7 @@ namespace Pentris
 
         private void StartGame(object sender, EventArgs e)
         {
+            isGameOn = true;
             Reset();
         }
         private void Reset()
@@ -63,6 +65,7 @@ namespace Pentris
             
             graphics = Graphics.FromImage(pictureBox1.Image);
 
+            if (timer != null) timer.Stop();
             timer = new Timer();
             timer.Interval = 1000 / Params.framesPerSecond;
             timer.Tick += CalculateNextFrame;
@@ -81,6 +84,7 @@ namespace Pentris
 
         private void KeyUpHandler(object sender, KeyEventArgs e)
         {
+            if (!isGameOn) return;
             switch (e.KeyCode)
             {
                 case Keys.Left:
@@ -97,6 +101,7 @@ namespace Pentris
 
         protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
         {
+            if (!isGameOn) return false;
             switch (keyData)
             {
                 case Keys.Z:
@@ -158,11 +163,17 @@ namespace Pentris
         #region GameState
         public void CalculateNextFrame(object sender, EventArgs e)
         {
-            if (currentPiece == null) GetRandomPiece();
-            if (frameCounter % dropRate == 0)
+            if (!isGameOn)
             {
-                DropCurrentPiece();                               
+                if(timer != null) timer.Stop();
+                return;
             }
+            if (currentPiece == null)
+            {
+                GetRandomPiece();
+                CheckEnd();
+            }
+            if (frameCounter % dropRate == 0) DropCurrentPiece();                               
             MakeMove();
             ++frameCounter;
             Render();
@@ -170,6 +181,7 @@ namespace Pentris
 
         private void MakeMove()
         {
+            if (!isGameOn) return;
             if (dasStatus == DASStatus.Unloaded) return;
             int delay = dasStatus == DASStatus.Delay ? Params.dasDelay : Params.dasNormalRate;
             if(frameCounter - lastMoveFrame == delay)
@@ -200,9 +212,27 @@ namespace Pentris
                 {
                     board.Fields[square.X, square.Y].isOccupied = true;
                 }
-                GetRandomPiece();
+                currentPiece = null;
             }
             else currentPiece.Drop(board);
+        }
+
+        private void CheckEnd()
+        {
+            var squaresOccupied = currentPiece.GetOccupiedSquares();
+            foreach (Point square in squaresOccupied)
+            {
+                if (board.Fields[square.X, square.Y].isOccupied)
+                {
+                    isGameOn = false;
+                    if (timer != null)
+                    {
+                        timer.Stop();
+                        timer = null;
+                    }
+                    break;
+                }
+            }
         }
 
         #endregion
