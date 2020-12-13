@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Drawing;
-using System.Text;
 
 namespace Pentris
 {
@@ -91,13 +89,13 @@ namespace Pentris
 
         public override List<Point> GetNextBoxSquares()
         {
-            List<Point> pointList = new List<Point>();
-            pointList.Add(new Point(1, 3));
-            pointList.Add(new Point(2, 3));
-            pointList.Add(new Point(3, 3));
-            pointList.Add(new Point(4, 3));
-            pointList.Add(new Point(5, 3));
-            return pointList;
+            List<Point> points = new List<Point>();
+            points.Add(new Point(1, 3));
+            points.Add(new Point(2, 3));
+            points.Add(new Point(3, 3));
+            points.Add(new Point(4, 3));
+            points.Add(new Point(5, 3));
+            return points;
         }
     }
 }

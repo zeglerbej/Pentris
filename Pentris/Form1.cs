@@ -236,9 +236,7 @@ namespace Pentris
             {
                 if (nextPiece == null) nextPiece = GetRandomPiece();
                 currentPiece = nextPiece;
-                nextPiece = GetRandomPiece();
-                
-                CheckEnd();
+                nextPiece = GetRandomPiece();               
             }
             if (frameCounter % dropRate == 0) DropCurrentPiece();                               
             MakeMove();
@@ -314,6 +312,8 @@ namespace Pentris
             {
                 case 0:
                     return new LongPiece();
+                case 1:
+                    return new CrossPiece();
                 default:
                     return null;
             }
@@ -326,10 +326,13 @@ namespace Pentris
                 var currentPieceSquares = currentPiece.GetOccupiedSquares();
                 foreach (Point square in currentPieceSquares)
                 {
+                    if (!Helpers.IsInBounds(square.X, square.Y)) continue;
                     board.Fields[square.X, square.Y].isOccupied = true;
                 }
-                currentPiece = null;
+                currentPiece = nextPiece; 
+                nextPiece = GetRandomPiece();
                 CheckCompletedLines();
+                CheckEnd();
             }
             else currentPiece.Drop(board);
         }
@@ -349,6 +352,7 @@ namespace Pentris
             var squaresOccupied = currentPiece.GetOccupiedSquares();
             foreach (Point square in squaresOccupied)
             {
+                if (!Helpers.IsInBounds(square.X, square.Y)) continue;
                 if (board.Fields[square.X, square.Y].isOccupied)
                 {
                     isGameOn = false;
@@ -396,6 +400,7 @@ namespace Pentris
         private void Render()
         {
             graphics.Clear(Params.backgroundColor);
+            graphics2.Clear(Params.backgroundColor);
             RenderBoard();
             RenderCurrentPiece();
             RenderGrid();
