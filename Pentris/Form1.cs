@@ -33,6 +33,10 @@ namespace Pentris
         private int animationStartFrame;
         private List<int> completedLinesIndices;
         private int columnToEraseIndicator;
+        private int score;
+        private int level;
+        private int lines;
+        private bool transitioned; 
 
         #region Initialization
         public Form1()
@@ -60,6 +64,7 @@ namespace Pentris
         private void StartGame(object sender, EventArgs e)
         {
             isGameOn = true;
+            ToggleSettingsControl(false);
             Reset();
         }
         private void Reset()
@@ -88,7 +93,19 @@ namespace Pentris
             completedLinesIndices = null;
             columnToEraseIndicator = 0;
 
+            SetResultAndLabels();
+
             Render();
+        }
+
+        private void SetResultAndLabels()
+        {
+            score = 0;
+            lines = 0;
+            level = (int)numericUpDown1.Value;
+            label1.Text = "Score: 0";
+            label2.Text = "Lines: 0";
+            label3.Text = "Level: " + level.ToString();
         }
 
         private void KeyUpHandler(object sender, KeyEventArgs e)
@@ -186,6 +203,9 @@ namespace Pentris
                 {
                     showLineDisappearAnimation = false;
                     board.LowerRemainingRows(completedLinesIndices);
+                    IncreaseScore(completedLinesIndices.Count);
+                    lines += completedLinesIndices.Count;
+                    RefreshLabels();
                 }
                 return;
             }
@@ -214,6 +234,37 @@ namespace Pentris
                 }
                 ++columnToEraseIndicator;
             }
+        }
+
+        private void IncreaseScore(int numberOfLinesCleared)
+        {
+            int scoreToAdd = 20 * (level + 1);
+            switch (numberOfLinesCleared)
+            {
+                case 1:
+                    scoreToAdd *= 2;
+                    break;
+                case 2:
+                    scoreToAdd *= 5;
+                    break;
+                case 3:
+                    scoreToAdd *= 15;
+                    break;
+                case 4:
+                    scoreToAdd *= 60;
+                    break;
+                case 5:
+                    scoreToAdd *= 300;
+                    break;
+            }
+            score += scoreToAdd;            
+        }
+        private void RefreshLabels()
+        {
+            label1.Text = "Score: " + score.ToString();
+            label1.Refresh();
+            label2.Text = "Lines: " + lines.ToString();
+            label2.Refresh();
         }
         private void MakeMove()
         {
@@ -272,6 +323,7 @@ namespace Pentris
                 if (board.Fields[square.X, square.Y].isOccupied)
                 {
                     isGameOn = false;
+                    ToggleSettingsControl(true);
                     if (timer != null)
                     {
                         timer.Stop();
@@ -280,6 +332,13 @@ namespace Pentris
                     break;
                 }
             }
+        }
+
+        private void ToggleSettingsControl(bool mode)
+        {
+            numericUpDown1.Enabled = mode;
+            numericUpDown1.Visible = mode;
+            label4.Visible = mode;
         }
 
         #endregion
