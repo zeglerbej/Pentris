@@ -11,6 +11,7 @@ namespace Pentris
         public const int columnCount = 12;
         public const int framesPerSecond = 60;
         public const int squareSizePercent = 3;
+        public const int nextPiecesquareSizePercent = 2;
         public const int PieceTypeCount = 1;
         public const int dasDelay = 16;
         public const int dasNormalRate = 6;

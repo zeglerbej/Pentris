@@ -27,6 +27,8 @@ namespace Pentris
 
         public abstract bool CanMove(Board board, Direction direction);
 
+        public abstract List<Point> GetNextBoxSquares();
+
         public void Drop(Board board)
         {
             if (CanDrop(board)) ++middle.Y;

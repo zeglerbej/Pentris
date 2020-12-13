@@ -88,5 +88,16 @@ namespace Pentris
             if (direction == Direction.Up) direction = Direction.Right;
             else direction = Direction.Up;
         }
+
+        public override List<Point> GetNextBoxSquares()
+        {
+            List<Point> pointList = new List<Point>();
+            pointList.Add(new Point(1, 3));
+            pointList.Add(new Point(2, 3));
+            pointList.Add(new Point(3, 3));
+            pointList.Add(new Point(4, 3));
+            pointList.Add(new Point(5, 3));
+            return pointList;
+        }
     }
 }

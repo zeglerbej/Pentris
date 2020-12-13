@@ -19,11 +19,14 @@ namespace Pentris
     public partial class Form1 : Form
     {
         private Graphics graphics;
+        private Graphics graphics2;
         private Piece currentPiece;
+        private Piece nextPiece;
         private Timer timer;
         private Board board;
         private int frameCounter;
         private int squareSizePixel;
+        private int nextBoxSquareSizePixel;
         private DASStatus dasStatus;
         private int lastMoveFrame;
         private Direction moveDirection;
@@ -56,9 +59,23 @@ namespace Pentris
             squareSizePixel = Params.squareSizePercent * this.Width / 100;
             pictureBox1.Width = squareSizePixel * Params.columnCount;
             pictureBox1.Height = squareSizePixel * Params.rowCount;
-            int x = (this.Width - pictureBox1.Width) / 2;
-            int y = (this.Height - pictureBox1.Height) / 2;
+            int x = Math.Abs(this.Width - pictureBox1.Width) / 2;
+            int y = Math.Abs(this.Height - pictureBox1.Height) / 2;
             pictureBox1.Location = new Point(x, y);
+            int x2 = x + pictureBox1.Width + this.Width / 10;
+            pictureBox2.Location = new Point(x2, y);
+            nextBoxSquareSizePixel = Params.nextPiecesquareSizePercent * this.Width / 100;
+            pictureBox2.Width = nextBoxSquareSizePixel * 7;
+            pictureBox2.Height = nextBoxSquareSizePixel * 7;
+            button1.Location = new Point(x2, this.Height / 2);
+            label4.Location = new Point(x2, this.Height / 2 + button1.Height);
+            numericUpDown1.Location = new Point(x2, this.Height / 2 + button1.Height +
+                label4.Height);
+
+            int x3 = this.Width / 50;
+            label1.Location = new Point(x3, y);
+            label2.Location = new Point(x3, y + label1.Height);
+            label3.Location = new Point(x3, y + label1.Height + label2.Height);
         }
 
         private void StartGame(object sender, EventArgs e)
@@ -71,8 +88,10 @@ namespace Pentris
         {
             pictureBox1.BackColor = Params.backgroundColor;
             pictureBox1.Image = new Bitmap(pictureBox1.Width, pictureBox1.Height);
-            
+            pictureBox2.Image = new Bitmap(pictureBox2.Width, pictureBox2.Height);
+
             graphics = Graphics.FromImage(pictureBox1.Image);
+            graphics2 = Graphics.FromImage(pictureBox2.Image);
 
             if (timer != null) timer.Stop();
             timer = new Timer();
@@ -81,6 +100,7 @@ namespace Pentris
             timer.Start();
 
             currentPiece = null;
+            nextPiece = null;
 
             board = new Board();
             frameCounter = 1;
@@ -214,7 +234,10 @@ namespace Pentris
             }
             if (currentPiece == null)
             {
-                GetRandomPiece();
+                if (nextPiece == null) nextPiece = GetRandomPiece();
+                currentPiece = nextPiece;
+                nextPiece = GetRandomPiece();
+                
                 CheckEnd();
             }
             if (frameCounter % dropRate == 0) DropCurrentPiece();                               
@@ -283,15 +306,16 @@ namespace Pentris
                 lastMoveFrame = frameCounter;
             }
         }
-        public void GetRandomPiece()
+        public Piece GetRandomPiece()
         {
             Random rand = new Random(Guid.NewGuid().GetHashCode());
             int type = rand.Next(Params.PieceTypeCount);
             switch (type)
             {
                 case 0:
-                    currentPiece = new LongPiece();
-                    break;
+                    return new LongPiece();
+                default:
+                    return null;
             }
         }
 
@@ -375,7 +399,9 @@ namespace Pentris
             RenderBoard();
             RenderCurrentPiece();
             RenderGrid();
+            RenderNextPiece();
             pictureBox1.Refresh();
+            pictureBox2.Refresh();
         }
 
         private void RenderBoard()
@@ -422,6 +448,18 @@ namespace Pentris
             pen.Dispose();
         }
 
+        private void RenderNextPiece()
+        {
+            if (nextPiece == null) return;
+            var squaresToFill = nextPiece.GetNextBoxSquares();
+            SolidBrush brush = new SolidBrush(Params.occupiedSquareColor);
+            foreach (Point square in squaresToFill)
+            {
+                int x = square.X * nextBoxSquareSizePixel;
+                int y = square.Y * nextBoxSquareSizePixel;
+                graphics2.FillRectangle(brush, x, y, nextBoxSquareSizePixel, nextBoxSquareSizePixel);
+            }
+        }
         #endregion
     }
 }
