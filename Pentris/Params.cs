@@ -15,6 +15,7 @@ namespace Pentris
         public const int dropRate = 50;
         public const int dasDelay = 16;
         public const int dasNormalRate = 6;
+        public const int animationFramesPerColumn = 2;
         public static readonly Color backgroundColor = Color.Black;
         public static readonly Color occupiedSquareColor = Color.FromArgb(55, 110, 191);
     }

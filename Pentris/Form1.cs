@@ -29,6 +29,10 @@ namespace Pentris
         private Direction moveDirection;
         private int dropRate;
         private bool isGameOn;
+        private bool showLineDisappearAnimation;
+        private int animationStartFrame;
+        private List<int> completedLinesIndices;
+        private int columnToEraseIndicator;
 
         #region Initialization
         public Form1()
@@ -78,6 +82,11 @@ namespace Pentris
             dasStatus = DASStatus.Unloaded;
             lastMoveFrame = 0;
             dropRate = Params.dropRate;
+
+            showLineDisappearAnimation = false;
+            animationStartFrame = 0;
+            completedLinesIndices = null;
+            columnToEraseIndicator = 0;
 
             Render();
         }
@@ -168,6 +177,18 @@ namespace Pentris
                 if(timer != null) timer.Stop();
                 return;
             }
+            if (showLineDisappearAnimation)
+            {
+                LineDisappearAnimation();
+                ++frameCounter;
+                Render();
+                if(columnToEraseIndicator >= Params.columnCount / 2)
+                {
+                    showLineDisappearAnimation = false;
+                    board.LowerRemainingRows(completedLinesIndices);
+                }
+                return;
+            }
             if (currentPiece == null)
             {
                 GetRandomPiece();
@@ -179,6 +200,21 @@ namespace Pentris
             Render();
         }
 
+        private void LineDisappearAnimation()
+        {
+            if ((frameCounter - animationStartFrame) % Params.animationFramesPerColumn == 0)
+            {
+                foreach (int row in completedLinesIndices)
+                {
+                    int column = Params.columnCount / 2 - 1 - columnToEraseIndicator;
+                    board.Fields[column, row].isOccupied = false;
+                    column = Params.columnCount / 2 + columnToEraseIndicator;
+                    board.Fields[column, row].isOccupied = false;
+                    
+                }
+                ++columnToEraseIndicator;
+            }
+        }
         private void MakeMove()
         {
             if (!isGameOn) return;
@@ -213,10 +249,21 @@ namespace Pentris
                     board.Fields[square.X, square.Y].isOccupied = true;
                 }
                 currentPiece = null;
+                CheckCompletedLines();
             }
             else currentPiece.Drop(board);
         }
 
+        private void CheckCompletedLines()
+        {
+            completedLinesIndices = board.GetCompletedLineIndices();
+            if(completedLinesIndices.Count > 0)
+            {
+                showLineDisappearAnimation = true;            
+                animationStartFrame = frameCounter;
+                columnToEraseIndicator = 0;
+            }
+        }
         private void CheckEnd()
         {
             var squaresOccupied = currentPiece.GetOccupiedSquares();
