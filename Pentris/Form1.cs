@@ -86,7 +86,7 @@ namespace Pentris
             frameCounter = 1;
             dasStatus = DASStatus.Unloaded;
             lastMoveFrame = 0;
-            dropRate = Params.dropRate;
+            
 
             showLineDisappearAnimation = false;
             animationStartFrame = 0;
@@ -94,7 +94,7 @@ namespace Pentris
             columnToEraseIndicator = 0;
 
             SetResultAndLabels();
-
+            dropRate = Params.dropRate[level];
             Render();
         }
 
@@ -120,7 +120,7 @@ namespace Pentris
                     dasStatus = DASStatus.Unloaded;
                     break;
                 case Keys.Down:
-                    dropRate = Params.dropRate;
+                    dropRate = Params.dropRate[level];
                     break;
             }
         }
@@ -128,6 +128,7 @@ namespace Pentris
         protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
         {
             if (!isGameOn) return false;
+            if (currentPiece == null) return false;
             switch (keyData)
             {
                 case Keys.Z:
@@ -204,7 +205,9 @@ namespace Pentris
                     showLineDisappearAnimation = false;
                     board.LowerRemainingRows(completedLinesIndices);
                     IncreaseScore(completedLinesIndices.Count);
+                    int previousLines = lines;
                     lines += completedLinesIndices.Count;
+                    if (lines / 10 > previousLines / 10) Transition();
                     RefreshLabels();
                 }
                 return;
@@ -265,6 +268,8 @@ namespace Pentris
             label1.Refresh();
             label2.Text = "Lines: " + lines.ToString();
             label2.Refresh();
+            label3.Text = "Level: " + level.ToString();
+            label3.Refresh();
         }
         private void MakeMove()
         {
@@ -334,11 +339,32 @@ namespace Pentris
             }
         }
 
+        private void Transition()
+        {
+            if(transitioned)
+            {
+                ++level;
+                dropRate = Params.dropRate[level];
+                return;
+            }
+            int startLevel = (int)numericUpDown1.Value;
+            int cap = Math.Max(100, startLevel * 10 - 50);
+            int normalTransition = startLevel * 10 + 10;
+            int transitionLines = Math.Min(normalTransition, cap);
+            if(lines >= transitionLines)
+            {
+                transitioned = true;
+                ++level;
+                dropRate = Params.dropRate[level];
+            }
+        }
+
         private void ToggleSettingsControl(bool mode)
         {
             numericUpDown1.Enabled = mode;
             numericUpDown1.Visible = mode;
             label4.Visible = mode;
+            button1.Visible = mode;
         }
 
         #endregion
